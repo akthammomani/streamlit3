@@ -15,9 +15,9 @@ icon = Image.open("chef.jpg")
 st.set_page_config(layout='centered', page_title='AI-Powered Recipe Recommender', page_icon=icon)
 
 # Let's upload the Painted Ladies image:
-image = Image.open("project_logo.JPG")
+image = Image.open("project_logo.jpg")
 # Let's specify which column, fix its width, and let's give this image a caption:
-st.image(Image.open("project_logo.JPG"), use_column_width=True)
+st.image(Image.open("project_logo.jpg"), use_column_width=True)
 
 
 # Load the saved models and components
@@ -35,7 +35,7 @@ def load_data(filepath):
     return pd.read_csv(filepath)
 
 # Use the cached function to load the data
-df = load_data('all_recipes_final_df_v2.csv')
+df = load_data('all_recipes_final_df_v2.zip')
 
 # Update the columns to reflect grams with daily percentage
 df['Carbohydrates g(Daily %)'] = df.apply(lambda x: f"{x['carbohydrates_g']}g ({x['carbohydrates_g_dv_perc']}%)", axis=1)
