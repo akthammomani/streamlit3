@@ -1,6 +1,6 @@
 streamlit==1.37.1
 pandas==2.0.3
-numpy==1.24.3
+numpy==1.21.6
 pickleshare==0.7.5
 tensorflow==2.13.0
 scikit-learn==1.3.2
