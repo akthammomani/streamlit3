@@ -1,4 +1,5 @@
 import streamlit as st
+import os
 import pandas as pd
 import numpy as np
 import pickle
@@ -7,35 +8,38 @@ from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.cluster import KMeans
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.decomposition import PCA
+import keras   
 import tensorflow as tf
 from tensorflow.keras.models import Model
 from tensorflow.keras.layers import Input, Dense
+import joblib
+
 
 icon = Image.open("chef.jpg")
 st.set_page_config(layout='centered', page_title='AI-Powered Recipe Recommender', page_icon=icon)
 
 # Let's upload the Painted Ladies image:
-image = Image.open("project_logo.jpg")
+image = Image.open("project_logo.JPG")
 # Let's specify which column, fix its width, and let's give this image a caption:
-st.image(Image.open("project_logo.jpg"), use_column_width=True)
+st.image(Image.open("project_logo.JPG"), use_container_width=True)
 
 
-# Load the saved models and components
-with open('recipe_recommendation_model.pkl', 'rb') as file:
-    model = pickle.load(file)
+# Load the saved models and components:
+@st.cache_resource(show_spinner="Loading models…")
+def load_artifacts():
+    model = keras.models.load_model("recipe_recommendation_model_v1.keras")
+    pca   = joblib.load("pca_model_v1.joblib")
+    tfidf = joblib.load("tfidf_vectorizer_v1.joblib")
+    return model, pca, tfidf
 
-with open('pca_model.pkl', 'rb') as file:
-    pca = pickle.load(file)
-
-with open('tfidf_vectorizer.pkl', 'rb') as file:
-    tfidf = pickle.load(file)
+model, pca, tfidf = load_artifacts()
 
 @st.cache_data
 def load_data(filepath):
     return pd.read_csv(filepath)
 
 # Use the cached function to load the data
-df = load_data('all_recipes_final_df_v2.zip')
+df = load_data('all_recipes_final_df_v3.csv')
 
 # Update the columns to reflect grams with daily percentage
 df['Carbohydrates g(Daily %)'] = df.apply(lambda x: f"{x['carbohydrates_g']}g ({x['carbohydrates_g_dv_perc']}%)", axis=1)
@@ -115,7 +119,7 @@ def filter_and_sort_by_recipe_name(name):
     results = filter_by_recipe_name(name)
     return results.sort_values(by=['rating_count','rating'], ascending=False)
 
-def autocomplete_suggestions(user_input, df, max_suggestions=5):
+def autocomplete_suggestions(user_input, df, max_suggestions=50):
     # Filter recipe names that contain the user input
     filtered_df = df[df['name'].str.contains(user_input, case=False, na=False)]
     
@@ -172,43 +176,36 @@ option = st.selectbox(
 )
 
 
-if option == 'Personalized Recommendations':
-    #st.header('Get Recommendations')
+# ---------- Personalized Recommendations ----------
+if option == "Personalized Recommendations":
+    st.subheader("Get Recommendations")
 
-    st.write(
-"""
-    ### **Get Recommendations**
-""") 
-    
-    # Input field with suggestions
-    user_input = st.text_input('Enter a Recipe Name')
-    
-    suggestions = []
-    if user_input:
-        suggestions = autocomplete_suggestions(user_input, df)
+    user_in = st.text_input("Enter a Recipe Name")
+    suggestions = autocomplete_suggestions(user_in, df) if user_in else []
 
-    selected_recipe = None
+    sel_recipe = None
     if suggestions:
-        st.write("Did you mean:")
-        for suggestion in suggestions:
-            if st.button(suggestion):
-                selected_recipe = suggestion
-                break  # Exit the loop once a selection is made
+        sel_recipe = st.selectbox(
+            "Did you mean one of these recipes?",
+            suggestions,
+            index=None,
+            placeholder="Select a recipe",
+        )
 
-    if selected_recipe:
-        #top_n = st.slider('Number of Recommendations', 1, 10, 5)
-        #diversify = st.checkbox('Diversify Recommendations')
-        
-        similar_recipes = get_similar_recipes(selected_recipe, top_n=10, diversify=0)
-        st.write(f"Top {10} recommendations for '{selected_recipe}':")
-        st.dataframe(similar_recipes.reset_index(drop=True).reset_index(drop=False).rename(columns={'index': 'Rank'}).assign(Rank=lambda x: x.index + 1), hide_index=True)
+    if sel_recipe:
+        recs = get_similar_recipes(sel_recipe, top_n=10)
+        st.write(f"Top-10 recipe Similar to **{sel_recipe}**:")
+        st.dataframe(
+            recs.reset_index(drop=True)
+                .reset_index(drop=False)
+                .rename(columns={"index": "Rank"})
+                .assign(Rank=lambda x: x.index + 1),
+            hide_index=True,
+        )
 
         st.write("#### Learn More")
         st.markdown("[![](https://img.shields.io/badge/GitHub%20-Recipes%20Recommender-informational)](https://github.com/akthammomani/AI_Powered_Recipe_Recommender/tree/main/Notebooks/Modeling)")
     
-    elif user_input and not selected_recipe:
-        if st.button('Get Recommendations'):
-            st.warning('No matching recipes found. Please try again.')
 
 elif option == 'Popular Searches':
     #st.header('Popular Searches')
@@ -379,5 +376,5 @@ st.write("""
     [![](https://img.shields.io/badge/GitHub-Recipes%20Recommender-informational)](https://github.com/akthammomani/AI_Powered_Recipe_Recommender/)
     [![](https://img.shields.io/badge/Open-Issue-informational)](https://github.com/akthammomani/AI_Powered_Recipe_Recommender/issues)
     [![MAIL Badge](https://img.shields.io/badge/-aktham.momani81@gmail.com-c14438?style=flat-square&logo=Gmail&logoColor=white&link=mailto:aktham.momani81@gmail.com)](mailto:aktham.momani81@gmail.com)
-    ###### © All rights reserved.
+    ###### © Aktham Momani, 2025. All rights reserved.
     """)
