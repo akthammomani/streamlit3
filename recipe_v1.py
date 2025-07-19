@@ -39,7 +39,8 @@ def load_data(filepath):
     return pd.read_csv(filepath)
 
 # Use the cached function to load the data
-df = load_data('all_recipes_final_df_v3.csv')
+#df = load_data('all_recipes_final_df_v3.csv')
+df = load_data("all_recipes_final_df_v3.zip")
 
 # Update the columns to reflect grams with daily percentage
 df['Carbohydrates g(Daily %)'] = df.apply(lambda x: f"{x['carbohydrates_g']}g ({x['carbohydrates_g_dv_perc']}%)", axis=1)
