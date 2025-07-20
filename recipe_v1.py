@@ -299,7 +299,7 @@ html_content = """
   <ul>
     <li><strong>AI-Recommendations:</strong></li>
     <ul>
-      <li>Simply enter the name of a recipe, and the app will suggest similar recipes tailored to your preferences.</li>
+      <li>Simply enter the name of a recipe or a keyword, and the app will recommend similar recipes tailored to your preferences.</li>
       <li>Autocomplete suggestions guide you to the exact recipe name you're looking for.</li>
       <li>Our Recommender system is based on Rating, Category, Diet Type, and Ingredients.</li>
     </ul>
