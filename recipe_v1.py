@@ -132,17 +132,16 @@ def load_artifacts():
 model, pca, tfidf = load_artifacts()
 
 @st.cache_data
-def load_data(filepath):
-    return pd.read_csv(filepath)
+def load_and_enrich_data(filepath):
+    df = pd.read_csv(filepath)
+    df['Carbohydrates g(Daily %)'] = df.apply(lambda x: f"{x['carbohydrates_g']}g ({x['carbohydrates_g_dv_perc']}%)", axis=1)
+    df['Sugars g(Daily %)'] = df.apply(lambda x: f"{x['sugars_g']}g ({x['sugars_g_dv_perc']}%)", axis=1)
+    df['Fat g(Daily %)'] = df.apply(lambda x: f"{x['fat_g']}g ({x['fat_g_dv_perc']}%)", axis=1)
+    df['Protein g(Daily %)'] = df.apply(lambda x: f"{x['protein_g']}g ({x['protein_g_dv_perc']}%)", axis=1)
+    return df
 
 # Use the cached function to load the data
-df = load_data("all_recipes_final_df_v3.zip")
-
-# Update the columns to reflect grams with daily percentage:
-df['Carbohydrates g(Daily %)'] = df.apply(lambda x: f"{x['carbohydrates_g']}g ({x['carbohydrates_g_dv_perc']}%)", axis=1)
-df['Sugars g(Daily %)'] = df.apply(lambda x: f"{x['sugars_g']}g ({x['sugars_g_dv_perc']}%)", axis=1)
-df['Fat g(Daily %)'] = df.apply(lambda x: f"{x['fat_g']}g ({x['fat_g_dv_perc']}%)", axis=1)
-df['Protein g(Daily %)'] = df.apply(lambda x: f"{x['protein_g']}g ({x['protein_g_dv_perc']}%)", axis=1)
+df = load_and_enrich_data("all_recipes_final_df_v3.zip")
 
 
 # Transform the combined features using the loaded TF-IDF vectorizer and PCA model:
