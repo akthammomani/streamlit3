@@ -2,3 +2,7 @@
 base="light"
 backgroundColor="#fef8ef"
 secondaryBackgroundColor="#FAEBD7"
+[client]
+toolbarMode = "viewer"
+[ui]
+hideTopBar = true
